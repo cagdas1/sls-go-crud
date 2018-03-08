@@ -12,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	
-	"github.com/teris-io/shortid"
 )
 
 type Dog struct {
@@ -48,7 +46,7 @@ func exitWithError(err error) {
 
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Init dynamodb
-	config := &Config{}
+	config := Config{}
 	if err:= config.Load(); err != nil{
 		exitWithError(err)
 	}
@@ -56,33 +54,26 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	awsConfig.WithRegion(config.Region)
 	sess := session.Must(session.NewSession(awsConfig))
 	dynamo := dynamodb.New(sess)
-	
-	id, _ := shortid.Generate()
-	data := &Dog{
-		DogId: id,
-	}
-	json.Unmarshal([]byte(request.Body), data)
-	dynamoItem, _ := dynamodbattribute.MarshalMap(data)
-	fmt.Printf("dynamoItem %s", dynamoItem)
-	params := &dynamodb.PutItemInput{
-		Item: dynamoItem,
+
+	params := &dynamodb.ScanInput{
 		TableName: aws.String(config.Table),
 	}
-	_, errDb := dynamo.PutItem(params);
-	if errDb!= nil{
-		fmt.Printf("errDb %s", errDb.Error())
-		return events.APIGatewayProxyResponse{
-			Body: string(errDb.Error()),
-			StatusCode: 500,
-			}, nil
-			}else{
-				body, _ := json.Marshal(data)
-				return events.APIGatewayProxyResponse{
-					Body: string(body),
-					StatusCode: 200,
-					}, nil
-				}
-			}
+	result, dbErr := dynamo.Scan(params)
+	if dbErr != nil{
+		fmt.Printf("dbError %s", dbErr.Error())
+		exitWithError(dbErr)
+	}
+	dogs := []Dog{}
+	err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &dogs)
+	if err != nil{
+		exitWithError(err)
+	}
+	body, _ := json.Marshal(dogs)
+	return events.APIGatewayProxyResponse{
+		Body: string(body),
+		StatusCode: 200,
+	}, nil
+}
 			
 func main() {
 	lambda.Start(Handler)

@@ -28,5 +28,12 @@ functions:
     handler: bin/apis/create
     events:
       - http:
-          path: /
+          path: /dogs
           method: post
+
+  list:
+    handler: bin/apis/list
+    events:
+      - http:
+          path: /dogs
+          method: get        
