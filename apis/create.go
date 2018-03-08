@@ -17,12 +17,12 @@ import (
 )
 
 type Dog struct {
-	DogId string	 `json:"DogId"`
-	Name string      `json:"Name"`
-	Age int          `json:"Age"`
-	Weight float32   `json:"Weight"`
-	Race string 	 `json:"Race"`
-	FavFood string 	 `json:"Favfood"`
+	Id string	`json:"Id"`
+	Name string	`json:"Name"`
+	Age int	`json:"Age"`
+	Weight float32	`json:"Weight"`
+	Race string	`json:"Race"`
+	FavFood string	`json:"Favfood"`
 }
 
 type Config struct{
@@ -59,7 +59,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	
 	id, _ := shortid.Generate()
 	data := &Dog{
-		DogId: id,
+		Id: id,
 	}
 	json.Unmarshal([]byte(request.Body), data)
 	dynamoItem, _ := dynamodbattribute.MarshalMap(data)
@@ -84,6 +84,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 				}
 			}
 			
-func main() {
-	lambda.Start(Handler)
-}
+			func main() {
+				lambda.Start(Handler)
+			}

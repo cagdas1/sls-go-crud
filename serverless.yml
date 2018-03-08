@@ -36,4 +36,11 @@ functions:
     events:
       - http:
           path: /dogs
-          method: get        
+          method: get
+          
+  get:
+    handler: bin/apis/get
+    events:
+      - http:
+          path: /dogs/{id}
+          method: get    

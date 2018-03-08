@@ -15,12 +15,12 @@ import (
 )
 
 type Dog struct {
-	Id string	`json:"Id"`
-	Name string	`json:"Name"`
-	Age int	`json:"Age"`
-	Weight float32	`json:"Weight"`
-	Race string	`json:"Race"`
-	FavFood string	`json:"Favfood"`
+	Id string	 	 `json:"Id"`
+	Name string      `json:"Name"`
+	Age int          `json:"Age"`
+	Weight float32   `json:"Weight"`
+	Race string 	 `json:"Race"`
+	FavFood string 	 `json:"Favfood"`
 }
 
 type Config struct{
@@ -55,20 +55,27 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	sess := session.Must(session.NewSession(awsConfig))
 	dynamo := dynamodb.New(sess)
 
-	params := &dynamodb.ScanInput{
+	id := request.PathParameters["id"]
+
+	params := &dynamodb.GetItemInput{
 		TableName: aws.String(config.Table),
+		Key: map[string]*dynamodb.AttributeValue{
+			"Id": {
+				S: aws.String(id),
+			},
+		},
 	}
-	result, dbErr := dynamo.Scan(params)
+	result, dbErr := dynamo.GetItem(params)
 	if dbErr != nil{
 		fmt.Printf("dbError %s", dbErr.Error())
 		exitWithError(dbErr)
 	}
-	dogs := []Dog{}
-	err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &dogs)
+	dog := Dog{}
+	err := dynamodbattribute.UnmarshalMap(result.Item, &dog)
 	if err != nil{
 		exitWithError(err)
 	}
-	body, _ := json.Marshal(dogs)
+	body, _ := json.Marshal(dog)
 	return events.APIGatewayProxyResponse{
 		Body: string(body),
 		StatusCode: 200,
