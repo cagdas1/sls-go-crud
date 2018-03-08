@@ -1,16 +1,11 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-# Serverless
+# Serverless directories
 .serverless
+
+# golang output binary directory
+bin
+
+# golang vendor (dependencies) directory
+vendor
 
 # DS_Store
 .DS_Store
-
