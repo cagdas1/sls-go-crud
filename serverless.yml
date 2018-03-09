@@ -50,4 +50,11 @@ functions:
     events:
       - http:
           path: /dogs/{id}
-          method: delete 
+          method: delete
+          
+  update:
+    handler: bin/apis/update
+    events:
+      - http:
+          path: /dogs/{id}
+          method: put           
