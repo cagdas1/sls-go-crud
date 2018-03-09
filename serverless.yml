@@ -43,4 +43,11 @@ functions:
     events:
       - http:
           path: /dogs/{id}
-          method: get    
+          method: get
+          
+  delete:
+    handler: bin/apis/delete
+    events:
+      - http:
+          path: /dogs/{id}
+          method: delete 

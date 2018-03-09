@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"encoding/json"
 	"flag"
 	"os"
 	
@@ -11,17 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type Dog struct {
-	Id string	 	 `json:"Id"`
-	Name string      `json:"Name"`
-	Age int          `json:"Age"`
-	Weight float32   `json:"Weight"`
-	Race string 	 `json:"Race"`
-	FavFood string 	 `json:"Favfood"`
-}
 
 type Config struct{
 	Region string
@@ -66,7 +56,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 	id := request.PathParameters["id"]
 
-	params := &dynamodb.GetItemInput{
+	params := &dynamodb.DeleteItemInput{
 		TableName: aws.String(config.Table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"Id": {
@@ -74,19 +64,13 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 			},
 		},
 	}
-	result, dbErr := dynamo.GetItem(params)
+	result, dbErr := dynamo.DeleteItem(params)
 	if dbErr != nil{
 		fmt.Printf("dbError %s", dbErr.Error())
 		exitWithError(dbErr)
 	}
-	dog := Dog{}
-	err := dynamodbattribute.UnmarshalMap(result.Item, &dog)
-	if err != nil{
-		exitWithError(err)
-	}
-	body, _ := json.Marshal(dog)
 	return events.APIGatewayProxyResponse{
-		Body: string(body),
+		Body: result.String(),
 		StatusCode: 200,
 	}, nil
 }

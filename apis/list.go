@@ -43,18 +43,27 @@ func exitWithError(err error) {
 	fmt.Fprintln(os.Stderr, err)
 	panic(err)
 }
+var dynamo *dynamodb.DynamoDB
+var config Config
 
-func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// Init dynamodb
-	config := Config{}
-	if err:= config.Load(); err != nil{
-		exitWithError(err)
+func setup(){
+	config = Config{}
+	if len(config.Table) == 0{
+		if err:= config.Load(); err != nil{
+			exitWithError(err)
+		}
 	}
 	awsConfig := &aws.Config{}
 	awsConfig.WithRegion(config.Region)
 	sess := session.Must(session.NewSession(awsConfig))
-	dynamo := dynamodb.New(sess)
+	dynamo = dynamodb.New(sess)
+}
 
+func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if dynamo == nil || len(config.Table) == 0{
+		setup()
+	}	
+	
 	params := &dynamodb.ScanInput{
 		TableName: aws.String(config.Table),
 	}
