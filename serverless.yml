@@ -57,4 +57,22 @@ functions:
     events:
       - http:
           path: /dogs/{id}
-          method: put           
+          method: put
+
+
+resources:
+  Resources:
+    DogsTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: Id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: Id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 3
+          WriteCapacityUnits: 3
+        TableName: 'Dogs'                     

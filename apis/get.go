@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"os"
-	
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,17 +15,17 @@ import (
 )
 
 type Dog struct {
-	Id string	 	 `json:"Id"`
-	Name string      `json:"Name"`
-	Age int          `json:"Age"`
-	Weight float32   `json:"Weight"`
-	Race string 	 `json:"Race"`
-	FavFood string 	 `json:"Favfood"`
+	Id      string  `json:"Id"`
+	Name    string  `json:"name"`
+	Age     int     `json:"age"`
+	Weight  float32 `json:"weight"`
+	Race    string  `json:"race"`
+	FavFood string  `json:"favfood"`
 }
 
-type Config struct{
+type Config struct {
 	Region string
-	Table string
+	Table  string
 }
 
 func (c *Config) Load() error {
@@ -47,10 +47,10 @@ func exitWithError(err error) {
 var dynamo *dynamodb.DynamoDB
 var config Config
 
-func setup(){
+func setup() {
 	config = Config{}
-	if len(config.Table) == 0{
-		if err:= config.Load(); err != nil{
+	if len(config.Table) == 0 {
+		if err := config.Load(); err != nil {
 			exitWithError(err)
 		}
 	}
@@ -61,7 +61,7 @@ func setup(){
 }
 
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if dynamo == nil || len(config.Table) == 0{
+	if dynamo == nil || len(config.Table) == 0 {
 		setup()
 	}
 	id := request.PathParameters["id"]
@@ -75,22 +75,22 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		},
 	}
 	result, dbErr := dynamo.GetItem(params)
-	if dbErr != nil{
+	if dbErr != nil {
 		fmt.Printf("dbError %s", dbErr.Error())
 		exitWithError(dbErr)
 	}
 	dog := Dog{}
 	err := dynamodbattribute.UnmarshalMap(result.Item, &dog)
-	if err != nil{
+	if err != nil {
 		exitWithError(err)
 	}
 	body, _ := json.Marshal(dog)
 	return events.APIGatewayProxyResponse{
-		Body: string(body),
+		Body:       string(body),
 		StatusCode: 200,
 	}, nil
 }
-			
+
 func main() {
 	lambda.Start(Handler)
 }
